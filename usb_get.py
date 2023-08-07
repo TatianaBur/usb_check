@@ -1,10 +1,10 @@
 def info_usb():
     import pyudev
     context = pyudev.Context()
-    for device in context.list_devices(subsystem='usb', ID_VENDOR='FTDI'):
+    for device in context.list_devices(subsystem='usb', ID_VENDOR='Prolific_Technology_Inc.'):
         print(device)
-        print(f"PRODUCT={device['PRODUCT']}")
-        print(f"ID_REVISION={device['ID_REVISION']}")
+        print(f"PRODUCT={device.get('PRODUCT')}")
+        print(f"ID_REVISION={device.get('ID_REVISION')}")
 
 def main():
     import pika
@@ -65,7 +65,7 @@ def main():
     connection.close()
 
     ser = serial.Serial()
-    ser.port = "/dev/ttyUSB1"
+    ser.port = "/dev/ttyUSB0"
     ser.baudrate = 2400
     ser.timeout = 1
 
