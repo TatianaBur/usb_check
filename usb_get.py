@@ -7,6 +7,10 @@ def info_usb():
         logging.warning(device)
         logging.warning(f"PRODUCT={device.get('PRODUCT')}")
         logging.warning(f"ID_REVISION={device.get('ID_REVISION')}")
+        if device.get('ID_REVISION') == '0400':
+            logging.warning("Тест пройден, ID_REVISION соответствует")
+        else:
+            logging.error("Тест не пройден, ID_REVISION не соответствует")
 
 def write_usb():
     import serial
@@ -25,7 +29,8 @@ def write_usb():
     try:
         ser.open()
     except Exception as e:
-        print("error open serial port: " + str(e))
+        #print("error open serial port: " + str(e))
+        logging.error("error open serial port: " + str(e))
         exit()
 
     if ser.isOpen():
@@ -35,7 +40,7 @@ def write_usb():
 
             # write data
             ser.write(string1000.encode(encoding='UTF-8'))
-            print("write data")
+            #print("write data")
 
             time.sleep(1)  # give the serial port sometime to receive the data
 
@@ -44,22 +49,28 @@ def write_usb():
             # print(len(response))
 
             if len(response) != len(string1000):
-                print("Длина массивов не совпадает")
-                logging.error("Длина массивов не совпадает")
+                #print("Длина массивов не совпадает, тест не пройден")
+                logging.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                logging.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                logging.error("Длина массивов не совпадает, эхо-тест не пройден")
 
             if response == string1000:
-                print("Тест в режиме эха пройден")
-                logging.warning("Тест в режиме эха пройден")
+                #print("Тест в режиме эхо пройден")
+                logging.warning(">>>>>>>>>>>>>>>>>>>>>>>>>")
+                logging.warning(">>>>>>>>>>>>>>>>>>>>>>>>>")
+                logging.warning("Тест в режиме эхо пройден")
             else:
-                print("Тест в режиме эха не пройден")
-                logging.error("Тест в режиме эха  не пройден")
+                #print("Тест в режиме эхо не пройден")
+                logging.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                logging.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                logging.error("Тест в режиме эхо  не пройден")
 
             ser.close()
         except Exception as e1:
-            print("error communicating...: " + str(e1))
+            #print("error communicating...: " + str(e1))
             logging.error(("error communicating...: " + str(e1)))
     else:
-        print("cannot open serial port ")
+        #print("cannot open serial port ")
         logging.error("cannot open serial port")
 
 def main():
@@ -100,21 +111,21 @@ def main():
         while True:
             consumer = channel.consume("usb_device", auto_ack=True)
             for method_frame, properties, body in consumer:
-                print("body={}".format(body))
+                #print("body={}".format(body))
                 global body_str
 
                 if body == None:
-                    print("No message in queue")
+                    logger.warning("В очереди нет сообщений")
                     break
 
                 body_str = body.decode("utf-8")
                 if body_str == "start":
-                    info_usb()
                     write_usb()
-                    print(f"Прочитанное сообщение: {body_str}")
+                    info_usb()
+                    #print(f"Прочитанное сообщение: {body_str}")
                 else:
-                    print(body_str)
-                    print("Тест не пройден")
+                    #print(body_str)
+                    logger.error("Сообщение в очереди не соответствует. Тест не пройден")
                 break
     finally:
         # закрытие соединения
